@@ -1,0 +1,54 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #1e1e1e;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+#game-area {
+    position: relative;
+    width: 1500px;
+    /* Khu vực chơi lớn hơn */
+    height: 600px;
+    background-color: #333;
+    border: 2px solid #555;
+    overflow: hidden;
+}
+
+#player {
+    position: absolute;
+    width: 40px;
+    /* Nhân vật nhỏ hơn */
+    height: 40px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.body-part {
+    width: 50%;
+    height: 50%;
+    background-color: #4caf50;
+    box-sizing: border-box;
+    border: 1px solid #222;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.laser {
+    position: absolute;
+    width: 10px;
+    height: 40px;
+    background-color: red;
+    border-radius: 5px;
+}

@@ -1,0 +1,124 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.row {
+    gap: 20px;
+}
+
+.ao {
+    height: 400px;
+    object-fit: contain;
+}
+
+.quay {
+    display: Grid;
+    justify-content: end;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+}
+
+.quaylai {
+    padding: 10px 28px;
+    background: #1743e3;
+    border: 2px solid #1743e3;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+    font-size: 16px;
+    color: #eaeaea;
+    letter-spacing: 1px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: .5s;
+}
+
+.quaylai:hover {
+    background: transparent;
+    color: #1743e3;
+}
+
+body {
+    background-color: #eaeaea;
+}
+
+.abc {
+    background: #1743e3;
+    border: 2px solid #1743e3;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+    font-size: 16px;
+    color: #eaeaea;
+    letter-spacing: 1px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: .5s;
+}
+
+.abc:hover {
+    background: transparent;
+    color: #1743e3;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    width: 250px;
+    height: 400px;
+    background: #fff;
+    padding: 10px;
+}
+
+.card .ao {
+    width: 100%;
+    height: auto;
+    max-height: 60%;
+    object-fit: contain;
+    transition: transform 0.3s ease-in-out;
+}
+
+.card :hover.ao {
+    transform: scale(1.2);
+}
+
+button {
+    margin: 10px;
+}
+
+header {
+    margin-bottom: 10px;
+    background-color: #1743e3;
+    padding: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 25px;
+    color: #eaeaea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.navbar a {
+    display: inline-block;
+    font-size: 18px;
+    color: #eaeaea;
+    text-decoration: none;
+    font-weight: 500;
+    margin: 0 20px;
+}
+
+.navbar a:hover {
+    color: #fbff8d
+}
