@@ -45,10 +45,30 @@ body {
     visibility: hidden;
 }
 
-.laser {
+.warning-laser {
     position: absolute;
     width: 10px;
-    height: 40px;
+    height: 50px;
+    background-color: rgba(255, 255, 0, 0.7);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.long-laser {
+    position: absolute;
     background-color: red;
-    border-radius: 5px;
+    opacity: 0.8;
+    transition: opacity 1s;
+    /* Để có hiệu ứng biến mất từ từ */
+}
+
+
+/* Laser ngắn */
+
+.short-laser {
+    position: absolute;
+    background-color: blue;
+    border-radius: 50%;
+    width: 10px;
+    height: 30px;
 }

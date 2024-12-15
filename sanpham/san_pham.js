@@ -1,23 +1,46 @@
 const apiEndpoint = "https://671e105c1dfc429919812c3e.mockapi.io/api/DATA/product"; // Thay bằng link MockAPI của bạn
-
-// Lấy danh sách sản phẩm
+const searchInput = document.querySelector("#searchInput")
+    // Lấy danh sách sản phẩm
 function fetchProducts() {
     const loader = document.getElementById("product-list");
     loader.innerHTML = '<div class="text-center">Đang tải sản phẩm...</div>';
 
-    fetch(apiEndpoint)
-        .then((response) => {
-            if (!response.ok) throw new Error("Không thể tải sản phẩm.");
-            return response.json();
-        })
-        .then((products) => {
-            if (products.length === 0) throw new Error("Không có sản phẩm nào.");
-            displayProducts(products);
-        })
-        .catch((error) => {
-            console.error(error.message);
-            loader.innerHTML = `<div class="text-danger">${error.message}</div>`;
-        });
+    // Kiểm tra nếu sản phẩm đã được lưu trong localStorage
+    let products = JSON.parse(localStorage.getItem("products"));
+    if (products) {
+        displayProducts(products);
+    } else {
+        fetch(apiEndpoint)
+            .then((response) => {
+                if (!response.ok) throw new Error("Không thể tải sản phẩm.");
+                return response.json();
+            })
+            .then((products) => {
+                if (products.length === 0) throw new Error("Không có sản phẩm nào.");
+                // Lưu sản phẩm vào localStorage
+                localStorage.setItem("products", JSON.stringify(products));
+                displayProducts(products);
+            })
+            .catch((error) => {
+                console.error(error.message);
+                loader.innerHTML = `<div class="text-danger">${error.message}</div>`;
+            });
+    }
+}
+
+function searchFunction() {
+    const searchValue = searchInput.value.toLowerCase().trim();
+    let products = JSON.parse(localStorage.getItem("products"));
+
+    if (!searchValue) {
+        fetchProducts(); // Hiển thị tất cả sản phẩm nếu ô tìm kiếm trống
+        return;
+    }
+
+    if (products) {
+        const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchValue));
+        displayProducts(filteredProducts);
+    }
 }
 
 function displayProducts(products) {
@@ -45,11 +68,10 @@ function displayProducts(products) {
         .join("");
 }
 
-
-
-
-// Hiển thị modal
 function showModal(productId) {
+    const modalElement = document.getElementById("product-modal");
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement); // Lấy hoặc tạo instance
+
     fetch(`${apiEndpoint}/${productId}`)
         .then((response) => {
             if (!response.ok) throw new Error("Không thể tải chi tiết sản phẩm.");
@@ -59,26 +81,24 @@ function showModal(productId) {
             document.getElementById("product-name").innerText = product.name || "Không rõ tên";
             document.getElementById("product-description").innerText = product.description || "Không có mô tả.";
             document.getElementById("product-image").src = product.image || "default-image.jpg";
-            document.getElementById("product-price").innerText = product.price || "N/A";
-            const modal = new bootstrap.Modal(document.getElementById("product-modal"));
+            document.getElementById("product-price").innerText = product.price ? product.price.toLocaleString() + " " : "N/A";
             modal.show();
         })
         .catch((error) => {
             console.error(error.message);
-            createAlertBox("Không thể hiển thị chi tiết sản phẩm.", "danger");
+            createAlertBox("Không thể hiển thị chi tiết sản phẩm.", "danger", "red", 5000);
         });
 }
+
 
 function closeModal() {
     const modalElement = document.getElementById("product-modal");
     const modal = bootstrap.Modal.getInstance(modalElement);
     if (modal) {
-        modal.hide();
+        modal.hide(); // Đóng modal
     }
 }
 
-
-// Tạo thông báo
 function createAlertBox(message, backgroundColor, borderColor, duration) {
     const alertBox = document.createElement('div');
     alertBox.innerText = message;
@@ -109,44 +129,30 @@ function createAlertBox(message, backgroundColor, borderColor, duration) {
 function addToCart(event) {
     event.preventDefault();
 
-    try {
-        // Lấy thông tin từ nút được nhấn
-        const button = event.currentTarget;
-        const id = button.getAttribute("data-id");
-        const name = button.getAttribute("data-name");
-        const price = parseFloat(button.getAttribute("data-price"));
+    const button = event.currentTarget;
+    const id = button.getAttribute("data-id");
+    const name = button.getAttribute("data-name");
+    const price = parseFloat(button.getAttribute("data-price"));
 
-        // Kiểm tra nếu localStorage hoạt động
-        if (!window.localStorage) {
-            createAlertBox('Trình duyệt của bạn không hỗ trợ lưu trữ giỏ hàng.', 'red', 'white', 5000);
-            return;
-        }
-
-        // Lấy giỏ hàng từ localStorage hoặc tạo mới
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-        // Tìm sản phẩm trong giỏ hàng
-        const itemIndex = cart.findIndex(item => item.id === id);
-
-        if (itemIndex !== -1) {
-            // Nếu sản phẩm đã tồn tại, tăng số lượng
-            cart[itemIndex].quantity += 1;
-            createAlertBox(`Đã tăng số lượng ${name} trong giỏ hàng.`, 'lightgreen', 'green', 3000);
-        } else {
-            // Nếu sản phẩm chưa tồn tại, thêm mới
-            cart.push({ id, name, price, quantity: 1 });
-            createAlertBox(`${name} đã được thêm vào giỏ hàng!`, 'lightblue', 'blue', 3000);
-        }
-
-        // Lưu giỏ hàng trở lại localStorage
-        localStorage.setItem('cart', JSON.stringify(cart));
-    } catch (error) {
-        console.error('Lỗi khi thêm vào giỏ hàng:', error);
-        createAlertBox('Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.', 'red', 'white', 5000);
+    if (!window.localStorage) {
+        createAlertBox('Trình duyệt của bạn không hỗ trợ lưu trữ giỏ hàng.', 'red', 'white', 5000);
+        return;
     }
+
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    const itemIndex = cart.findIndex(item => item.id === id);
+
+    if (itemIndex !== -1) {
+        cart[itemIndex].quantity += 1;
+        createAlertBox(`Đã tăng số lượng ${name} trong giỏ hàng.`, 'lightgreen', 'green', 3000);
+    } else {
+        cart.push({ id, name, price, quantity: 1 });
+        createAlertBox(`${name} đã được thêm vào giỏ hàng!`, 'lightblue', 'blue', 3000);
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
 }
-
-
 
 // Cập nhật lại giỏ hàng khi thay đổi số lượng sản phẩm
 function updateQuantity(productId, quantity) {
@@ -277,6 +283,9 @@ function buyCart() {
         viewCart();
     }
 }
+
+
+
 
 // Bắt đầu
 window.onload = () => {

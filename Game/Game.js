@@ -4,14 +4,15 @@ const player = document.getElementById("player");
 let playerX = gameArea.offsetWidth / 2 - player.offsetWidth / 2;
 let playerY = gameArea.offsetHeight - player.offsetHeight;
 let speed = 5;
-let dashDistance = 120; // Khoảng cách lướt
-let isDashing = false; // Trạng thái lướt
-let isInvulnerable = false; // Trạng thái không bị sát thương
-let lives = 4; // Số mạng sống ban đầu
+let dashDistance = 120;
+let isDashing = false;
+let isInvulnerable = false;
+let lives = 4;
 let lasers = [];
 let laserSpeed = 3;
 let spawnInterval = 2000;
 let difficultyIncreaseRate = 5000;
+let gameActive = true;
 
 // Danh sách các phần cơ thể
 const bodyParts = [
@@ -25,57 +26,49 @@ const bodyParts = [
 player.style.left = `${playerX}px`;
 player.style.top = `${playerY}px`;
 
-// Theo dõi trạng thái phím
 let keys = {};
 document.addEventListener("keydown", (e) => (keys[e.key] = true));
 document.addEventListener("keyup", (e) => (keys[e.key] = false));
 
 // Lướt
 function dash() {
-    if (isDashing || isInvulnerable) return; // Ngăn spam lướt
+    if (isDashing || isInvulnerable || !gameActive) return;
 
     isDashing = true;
     isInvulnerable = true;
 
-    // Thay đổi trạng thái hiển thị khi lướt
-    player.style.opacity = "0.5";
-
-    // Lướt theo hướng hiện tại
     const directionX = (keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0);
     const directionY = (keys["ArrowDown"] ? 1 : 0) - (keys["ArrowUp"] ? 1 : 0);
 
-    playerX = Math.max(
+    const dashX = directionX * dashDistance;
+    const dashY = directionY * dashDistance;
+
+    const targetX = Math.max(
         0,
-        Math.min(
-            gameArea.offsetWidth - player.offsetWidth,
-            playerX + directionX * dashDistance
-        )
+        Math.min(gameArea.offsetWidth - player.offsetWidth, playerX + dashX)
     );
-    playerY = Math.max(
+    const targetY = Math.max(
         0,
-        Math.min(
-            gameArea.offsetHeight - player.offsetHeight,
-            playerY + directionY * dashDistance
-        )
+        Math.min(gameArea.offsetHeight - player.offsetHeight, playerY + dashY)
     );
 
+    playerX = targetX;
+    playerY = targetY;
     updatePlayerPosition();
 
-    // Kết thúc lướt sau 0.3 giây
+    player.style.opacity = "0.5";
     setTimeout(() => {
         isDashing = false;
+        player.style.opacity = "1";
 
-        // Trạng thái bất tử ngắn sau lướt
         setTimeout(() => {
             isInvulnerable = false;
-            player.style.opacity = "1";
         }, 300);
-    }, 300);
+    }, 0);
 }
 
-// Di chuyển player
 function movePlayer() {
-    if (!isDashing) {
+    if (gameActive && !isDashing) {
         if (keys["ArrowLeft"]) playerX = Math.max(0, playerX - speed);
         if (keys["ArrowRight"])
             playerX = Math.min(
@@ -90,7 +83,7 @@ function movePlayer() {
             );
     }
 
-    if (keys[" "]) dash(); // Nhấn Space để lướt
+    if (keys[" "]) dash();
 
     updatePlayerPosition();
 }
@@ -100,48 +93,130 @@ function updatePlayerPosition() {
     player.style.top = `${playerY}px`;
 }
 
-// Giảm mạng sống
 function loseLife() {
-    if (isInvulnerable || lives <= 0) return;
+    if (isInvulnerable || lives <= 0 || !gameActive) return;
 
     lives--;
-    bodyParts[lives].classList.add("hidden"); // Ẩn phần cơ thể
+    if (bodyParts[lives]) {
+        bodyParts[lives].classList.add("hidden");
+    }
 
     if (lives === 0) {
+        gameActive = false;
         alert("Game Over!");
-        clearInterval(gameInterval);
-        location.reload();
+        clearInterval(spawnIntervalID);
     }
 }
 
-// Tạo tia laser
+// Tạo laser
 function spawnLaser() {
+    if (!gameActive) return;
+
+    const laserType = Math.random() < 0.5 ? "long" : "short";
     const laser = document.createElement("div");
-    laser.classList.add("laser");
-    laser.style.left = `${Math.random() * (gameArea.offsetWidth - 10)}px`;
-    laser.style.top = `0px`;
+    laser.classList.add(laserType === "long" ? "long-laser" : "short-laser");
+
+    // Vị trí và hướng xuất hiện ngẫu nhiên
+    const randomEdge = Math.floor(Math.random() * 4); // 0: trên, 1: dưới, 2: trái, 3: phải
+    let startX, startY, directionX, directionY, angle;
+
+    switch (randomEdge) {
+        case 0: // Trên
+            startX = Math.random() * gameArea.offsetWidth;
+            startY = 0;
+            directionX = 0;
+            directionY = 1;
+            break;
+        case 1: // Dưới
+            startX = Math.random() * gameArea.offsetWidth;
+            startY = gameArea.offsetHeight;
+            directionX = 0;
+            directionY = -1;
+            break;
+        case 2: // Trái
+            startX = 0;
+            startY = Math.random() * gameArea.offsetHeight;
+            directionX = 1;
+            directionY = 0;
+            break;
+        case 3: // Phải
+            startX = gameArea.offsetWidth;
+            startY = Math.random() * gameArea.offsetHeight;
+            directionX = -1;
+            directionY = 0;
+            break;
+    }
+
+    laser.style.left = `${startX}px`;
+    laser.style.top = `${startY}px`;
     gameArea.appendChild(laser);
-    lasers.push(laser);
+
+    if (laserType === "long") {
+        // Laser dài sẽ kéo dài hết chiều dài của game-area
+        const laserWidth = 5; // Chiều rộng của laser dài
+        let laserHeight = gameArea.offsetHeight; // Chiều dài laser khi đi từ trên xuống dưới
+        if (randomEdge === 2 || randomEdge === 3) {
+            laserHeight = gameArea.offsetWidth; // Chiều dài laser khi đi từ trái sang phải
+            laser.style.transform = "rotate(90deg)"; // Xoay laser cho đúng hướng
+        }
+
+        laser.style.width = `${laserWidth}px`; // Đặt chiều rộng
+        laser.style.height = `${laserHeight}px`; // Đặt chiều dài
+        laser.style.opacity = "0"; // Đặt độ mờ ban đầu
+
+        // Tạo hiệu ứng nhấp nháy
+        setTimeout(() => {
+            laser.style.transition = "opacity 0.3s ease-out";
+            laser.style.opacity = "0.8"; // Làm laser sáng lên
+        }, 100);
+
+        // Làm laser dài biến mất sau 1s
+        setTimeout(() => {
+            laser.remove();
+        }, 1000);
+    } else {
+        // Laser ngắn di chuyển trong game và có thể xoay các góc khác nhau
+        const rotationAngle = Math.random() * 360; // Góc xoay ngẫu nhiên từ 0 đến 360 độ
+        laser.style.transform = `rotate(${rotationAngle}deg)`; // Xoay laser ngắn một góc ngẫu nhiên
+        lasers.push({ element: laser, directionX, directionY, angle: rotationAngle });
+    }
 }
 
-// Di chuyển tia laser
 function moveLasers() {
-    lasers.forEach((laser, index) => {
+    lasers.forEach((laserData, index) => {
+        const laser = laserData.element;
         const laserTop = parseInt(laser.style.top);
-        if (laserTop > gameArea.offsetHeight) {
+        const laserLeft = parseInt(laser.style.left);
+
+        const newTop = laserTop + laserData.directionY * laserSpeed;
+        const newLeft = laserLeft + laserData.directionX * laserSpeed;
+
+        if (
+            newTop < 0 ||
+            newTop > gameArea.offsetHeight ||
+            newLeft < 0 ||
+            newLeft > gameArea.offsetWidth
+        ) {
             laser.remove();
             lasers.splice(index, 1);
         } else {
-            laser.style.top = `${laserTop + laserSpeed}px`;
+            laser.style.top = `${newTop}px`;
+            laser.style.left = `${newLeft}px`;
+        }
+
+        // Xoay laser ngắn theo hướng di chuyển
+        if (laserData.angle !== undefined) {
+            const angle = Math.atan2(laserData.directionY, laserData.directionX) * (180 / Math.PI);
+            laser.style.transform = `rotate(${angle}deg)`; // Xoay laser ngắn theo hướng di chuyển
         }
 
         checkCollision(laser);
     });
 }
 
-// Kiểm tra va chạm
+
 function checkCollision(laser) {
-    if (isInvulnerable) return;
+    if (isInvulnerable || !gameActive) return;
 
     const laserRect = laser.getBoundingClientRect();
     const playerRect = player.getBoundingClientRect();
@@ -152,33 +227,33 @@ function checkCollision(laser) {
         laserRect.top < playerRect.bottom &&
         laserRect.bottom > playerRect.top
     ) {
-        isInvulnerable = true;
-        loseLife(); // Mất một phần cơ thể khi va chạm
-
-        setTimeout(() => {
-            isInvulnerable = false;
-        }, 1000);
+        loseLife();
+        laser.remove();
     }
 }
 
-// Tăng độ khó theo thời gian
+
+
+
 function increaseDifficulty() {
     setInterval(() => {
+        if (!gameActive) return;
+
         laserSpeed += 0.5;
         spawnInterval = Math.max(500, spawnInterval - 100);
     }, difficultyIncreaseRate);
 }
 
-// Game Loop
 function gameLoop() {
     movePlayer();
     moveLasers();
-    requestAnimationFrame(gameLoop);
+    if (gameActive) requestAnimationFrame(gameLoop);
 }
 
-// Bắt đầu game
+let spawnIntervalID;
+
 function startGame() {
-    setInterval(spawnLaser, spawnInterval);
+    spawnIntervalID = setInterval(spawnLaser, spawnInterval);
     increaseDifficulty();
     gameLoop();
 }

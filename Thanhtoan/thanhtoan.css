@@ -1,3 +1,16 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.table {
+    text-align: center;
+}
+
+#total-amount {
+    color: #d9534f;
+    /* Red for total amount */
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -80,14 +93,14 @@ body {
 
 .card .ao {
     width: 100%;
-    height: 60%;
+    height: auto;
     max-height: 60%;
     object-fit: contain;
     transition: transform 0.3s ease-in-out;
 }
 
 .card :hover.ao {
-    transform: scale(1.1);
+    transform: scale(1.2);
 }
 
 button {
@@ -131,10 +144,4 @@ header {
 .modal {
     z-index: 1050 !important;
     /* Modal luôn nằm trên backdrop */
-}
-
-.search {
-    padding: 5px;
-    width: 400px;
-    border-radius: 10px;
 }

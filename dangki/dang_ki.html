@@ -4,38 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>aoss</title>
-    <link rel="stylesheet" href="./dang_ki.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
-
+    <title>Đăng Ký</title>
+    <link rel="stylesheet" href="dang_ki.css">
 </head>
 
 <body>
     <section class="App">
-        <form class="App_container" action="../giaodien/a_giao_dien.html">
-            <!-- regular expression -->
-            <label for="your name">Tên  đăng kí tài khoản</label>
-            <input type="text" placeholder="Đặt tên đăng kí tài khoản" required minlength="3">
-
-            <label for="Email">Email</label>
-            <input type="email" placeholder="Điền email" required>
-
-            <label for="Password">Mật khẩu</label>
-            <input type="password" placeholder="Điền mật khẩu" required>
-
-            <label for="Comfirm Password">Xác nhận mật khẩu</label>
-            <input type="password" placeholder="Xác nhận mật khẩu" required>
-
-            <label for="Phone number">Số điện thoại</label>
-            <input type="number" placeholder="Điền số điện thoại" required minlength="10">
-
+        <form id="registerForm" class="App_container">
+            <label for="username">Tên đăng ký tài khoản</label>
+            <input type="text" id="username" placeholder="Đặt tên đăng ký tài khoản" required minlength="3">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Điền email" required>
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" placeholder="Điền mật khẩu" required>
+            <label for="confirmPassword">Xác nhận mật khẩu</label>
+            <input type="password" id="confirmPassword" placeholder="Xác nhận mật khẩu" required>
+            <label for="phone">Số điện thoại</label>
+            <input type="number" id="phone" placeholder="Điền số điện thoại" required minlength="10">
             <button type="submit">Đăng ký</button>
-
-            <a href="../dangnhap/dang_nhap.html">Đã có tài khoản</a>
         </form>
+
+        <a href="../dangnhap/dang_nhap.html">Đã có tài khoản</a>
     </section>
+
+    <script src="dangki.js"></script>
 </body>
 
 </html>
